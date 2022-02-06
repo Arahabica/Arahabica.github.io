@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="keywords" content="透明, 白, 画像, 透過, png, html5, canvas">
+  <meta name="description" content="画像の白い部分を透明にするサービス。html5で実装しているため、FireFoxでしか動きません。">
+  <style type="text/css">
+  body { background-color: #dadada; }
+  </style>
+  <title>白→透明</title>
+  <script type="text/javascript">
+   var $id = function(id) { return document.getElementById(id); }
+   var siro = 255;
+   //初期化処理はファイル関係のみ
+   window.onload = function(){
+      $id('siro').value = siro;
+      $id('fileup').addEventListener('dragover',onCancel, false);
+      $id('fileup').addEventListener('dragenter',onCancel, false);
+      $id('fileup').addEventListener('drop', onDropFile, false);
+      $id('up').addEventListener('click', up, false);
+      $id('down').addEventListener('click',down,false);
+   }
+    function change() {
+      siro = $id('siro').value;
+      $id('canvas').width = $id('jpn').naturalWidth;
+      $id('canvas').height = $id('jpn').naturalHeight;
+      var context = $id('canvas').getContext("2d");
+      context.drawImage($id('jpn'), 0, 0);
+      var imgd = context.getImageData(0, 0, $id('jpn').naturalWidth, $id('jpn').naturalHeight);
+      var pix = imgd.data;
+      for (var i = 0, n = pix.length; i < n; i += 4) {
+        if((pix[i] >=siro) && (pix[i+1] >=siro) && (pix[i+2] >=siro))
+        {
+           pix[i+3] = 0;
+        }
+        // アルファ
+      }
+      context.putImageData(imgd, 0, 0);
+    }
+    
+    //ファイル関係の処理
+    //デフォルト処理をキャンセル
+   var onCancel = function(e)
+   {
+     if(e.preventDefault) { e.preventDefault(); }
+     return false;
+   }
+
+   var onDropFile = function(e)
+   {
+     e.preventDefault();
+     // Fileオブジェクトを取得
+     var file = e.dataTransfer.files[0];
+     // ファイル読み込み
+     readFile(file);
+   };
+
+   // ファイル読み込み
+   var readFile = function(file)
+   {
+     //ファイルの情報
+     $id('file_name').innerHTML = file.name;
+     //$id('file_size').innerHTML = file.size;
+     //$id('file_type').innerHTML = file.type;
+     var img = document.createElement('img');
+     img.id = 'jpn';
+     img.style.width = "100px";
+     img.style.width = "100px";
+     //ファイルの中身
+     var reader = new FileReader();
+     reader.onload = function() {
+        img.src = reader.result;
+        $id('preview').appendChild(img);
+        change();
+     }
+     reader.readAsDataURL(file);
+   }
+  var up = function(){
+     if(Number($id('siro').value) < 255){
+        $id('siro').value = Number($id('siro').value) + 1;
+     } else {
+        $id('siro').value = 255;
+     }
+     change();
+  }
+  var down = function(){
+     if(Number($id('siro').value) > 0){
+        $id('siro').value = Number($id('siro').value) -1;
+     }else{
+        $id('siro').value = 0;
+     }
+     change();
+  }
+</script>
+</head>
+<body>
+  <div style="float:left;">
+  <div id='fileup' style="width:200px;height:250px; background-color:#F5F5F5;text-align:center;">
+     <div id='preview'></div>
+     <div id='file_name' style="text-align:center;"></div>
+     <div id='file_size'></div>
+     <div id='file_type'></div>
+     </div>
+   <form><input id='siro' type='text' size='5'></input></form>
+   <button id='down'>↓</button>
+   <button id='up'>↑</button>
+   <button onclick='change()'>CHANGE</button>
+   <a href="toumei2.html">黒→透明</a>
+  </div>
+  <canvas id="canvas" style="float:left;"></canvas>
+</body>
+</html>
